@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "student";
+  role: "studennt";
 }
 
 export interface Course {
