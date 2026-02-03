@@ -6,7 +6,6 @@ export interface User {
   role: "student";
 }
 
-// Course Model
 export interface Course {
   id: string;
   title: string;
