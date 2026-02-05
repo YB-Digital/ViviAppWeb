@@ -44,12 +44,16 @@ export const useCourseStore = create<CourseState>((set, get) => ({
 // API'dan kursları yükle
 export const loadCourses = async () => {
   try {
-    const res = await coursesAPI.getAll();
-    // API'dan gelen kursları tip uyumlu hale getir
-    const courses = res.courses.map((c: any) => ({
-      ...c,
-      isFavorite: c.isFavorite ?? false,
+    const response = await coursesAPI.getAll();
+    // API'dan gelen [{success, message, data}] formatını işliyoruz
+    const courses = response.map((item: any) => ({
+      ...item.data,
+      isFavorite: item.data.isFavorite ?? false,
+      rating: item.data.rating ?? 0,
+      reviewCount: item.data.reviewCount ?? 0,
     }));
+
+    console.log(courses)
     useCourseStore.setState({ courses });
   } catch (error) {
     // Hata yönetimi

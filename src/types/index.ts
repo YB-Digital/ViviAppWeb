@@ -9,15 +9,19 @@ export interface User {
 export interface Course {
   id: string;
   title: string;
-  author: string;
+  description: string;
+  shortDescription: string;
+  imagePath: string;
   price: number;
   rating: number;
   reviewCount: number;
+  star: number;
+  commentNumber: number;
   isFavorite: boolean;
-  image?: string;
-  description?: string;
-  language?: string;
-  contents?: CourseContent[];
+  targetAudience: string[];
+  trainerName: string;
+  userId: string;
+  videoIds: string[];
 }
 
 export interface CourseContent {

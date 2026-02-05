@@ -23,9 +23,8 @@ export default function LessonPage() {
   // Check if user has purchased this course
   const isPurchased = purchasedCourses.some(c => c.id === courseId);
 
-  // Find current lesson
-  const currentLesson = course?.contents?.find(c => c.id === lessonId);
-  const lessonIndex = course?.contents?.findIndex(c => c.id === lessonId) ?? 0;
+  // Find current video index
+  const lessonIndex = course?.videoIds?.findIndex((id: string) => id === lessonId) ?? 0;
 
   useEffect(() => {
     setCurrentLessonIndex(lessonIndex);
@@ -64,7 +63,7 @@ export default function LessonPage() {
     );
   }
 
-  if (!currentLesson) {
+  if (!course.videoIds || !course.videoIds.includes(lessonId)) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-gray-500">Lesson not found</p>
@@ -85,14 +84,14 @@ export default function LessonPage() {
     }
 
     // Auto-play next lesson
-    if (course.contents && currentLessonIndex < course.contents.length - 1) {
-      const nextLesson = course.contents[currentLessonIndex + 1];
-      router.push(`/course/${courseId}/lesson/${nextLesson.id}`);
+    if (course.videoIds && currentLessonIndex < course.videoIds.length - 1) {
+      const nextVideoId = course.videoIds[currentLessonIndex + 1];
+      router.push(`/course/${courseId}/lesson/${nextVideoId}`);
     }
   };
 
-  const navigateToLesson = (lesson: { id: string }) => {
-    router.push(`/course/${courseId}/lesson/${lesson.id}`);
+  const navigateToLesson = (videoId: string) => {
+    router.push(`/course/${courseId}/lesson/${videoId}`);
   };
 
   // Demo video URL - in production this would come from the API
@@ -111,7 +110,7 @@ export default function LessonPage() {
             <ArrowLeft size={24} strokeWidth={2} />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-gray-900 font-semibold text-lg truncate">{currentLesson.title}</h1>
+            <h1 className="text-gray-900 font-semibold text-lg truncate">Lesson {lessonIndex + 1}</h1>
             <p className="text-gray-500 text-sm truncate">{course.title}</p>
           </div>
         </div>
@@ -122,7 +121,7 @@ export default function LessonPage() {
         <div className="max-w-container mx-auto">
           <VideoPlayer
             src={videoUrl}
-            title={currentLesson.title}
+            title={`Lesson ${lessonIndex + 1}`}
             onProgress={handleProgress}
             onComplete={handleComplete}
             initialProgress={lessonProgress[lessonId] || 0}
@@ -134,25 +133,22 @@ export default function LessonPage() {
       <div className="max-w-container mx-auto px-6 py-8">
         {/* Lesson Info */}
         <div className="mb-8">
-          <h2 className="text-gray-900 text-2xl font-bold mb-2">{currentLesson.title}</h2>
-          {currentLesson.duration && (
-            <p className="text-gray-600 text-base">Duration: {currentLesson.duration}</p>
-          )}
+          <h2 className="text-gray-900 text-2xl font-bold mb-2">Lesson {lessonIndex + 1}</h2>
         </div>
 
         {/* Lesson List */}
         <div>
           <h3 className="text-gray-900 text-xl font-bold mb-4">Course Contents</h3>
           <div className="space-y-3">
-            {course.contents?.map((lesson, index) => {
-              const isCompleted = completedLessons.includes(lesson.id);
-              const isCurrent = lesson.id === lessonId;
-              const progress = lessonProgress[lesson.id] || 0;
+            {course.videoIds?.map((videoId, index) => {
+              const isCompleted = completedLessons.includes(videoId);
+              const isCurrent = videoId === lessonId;
+              const progress = lessonProgress[videoId] || 0;
 
               return (
                 <button
-                  key={lesson.id}
-                  onClick={() => navigateToLesson(lesson)}
+                  key={videoId}
+                  onClick={() => navigateToLesson(videoId)}
                   className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all min-h-[72px] ${isCurrent
                       ? 'bg-primary-50 border-2 border-primary shadow-soft'
                       : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-soft'
@@ -173,21 +169,16 @@ export default function LessonPage() {
 
                   <div className="flex-1 text-left min-w-0">
                     <p className={`font-semibold text-[15px] truncate ${isCurrent ? 'text-primary' : 'text-gray-900'}`}>
-                      {index + 1}. {lesson.title}
+                      {index + 1}. Video
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {lesson.duration && (
-                        <span className="text-gray-500 text-sm">{lesson.duration}</span>
-                      )}
-                      {progress > 0 && progress < 100 && (
-                        <div className="flex-1 h-1.5 bg-gray-200 rounded-full max-w-24">
-                          <div
-                            className="h-full bg-primary rounded-full"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    {progress > 0 && progress < 100 && (
+                      <div className="flex-1 h-1.5 bg-gray-200 rounded-full max-w-24">
+                        <div
+                          className="h-full bg-primary rounded-full"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </button>
               );

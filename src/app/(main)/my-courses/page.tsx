@@ -11,8 +11,8 @@ interface PurchasedCourseCardProps {
 }
 
 function PurchasedCourseCard({ course }: PurchasedCourseCardProps) {
-  const lessonCount = course.contents?.length || 0;
-  const firstLessonId = course.contents?.[0]?.id;
+  const lessonCount = course.videoIds?.length || 0;
+  const firstLessonId = course.videoIds?.[0] ?? undefined;
 
   return (
     <Link href={firstLessonId ? `/course/${course.id}/lesson/${firstLessonId}` : `/course/${course.id}`}>
@@ -42,7 +42,7 @@ function PurchasedCourseCard({ course }: PurchasedCourseCardProps) {
         {/* Course Info */}
         <div className="p-3">
           <h3 className="text-gray-900 font-medium text-sm mb-0.5 line-clamp-2">{course.title}</h3>
-          <p className="text-gray-500 text-xs mb-3">{course.author}</p>
+          <p className="text-gray-500 text-xs mb-3">{course.trainerName}</p>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-gray-500 text-xs">

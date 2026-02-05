@@ -6,11 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
-import { setAuthToken, authAPI } from '@/lib/api';
+import { setAuthToken, authAPI, userAPI } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,11 +20,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authAPI.login(email, password);
-      setUser({
-        id: res.user.id,
-        name: res.user.fullName,
-        email: res.user.email,
-      });
       setAuthToken(res.data.token);
       router.push('/');
     } catch (error: any) {

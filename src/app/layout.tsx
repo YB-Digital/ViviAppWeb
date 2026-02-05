@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { UserProvider } from "@/components/providers/user-provider";
 
 export const metadata: Metadata = {
   title: "VIVI - Beauty • Aesthetics • Academy",
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white min-h-screen">
-        {children}
+       <UserProvider>
+         {children}
+       </UserProvider>
       </body>
     </html>
   );

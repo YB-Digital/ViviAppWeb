@@ -23,11 +23,11 @@ export default function CourseCard({ course }: CourseCardProps) {
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden transition-all hover:shadow-md h-full flex flex-col">
         {/* Course Image */}
         <div className="relative aspect-video bg-gray-100">
-          {course.image ? (
+          {course.imagePath ? (
             <div
               className="w-full h-full bg-gray-100"
               style={{
-                backgroundImage: course.image ? `url(${course.image})` : undefined,
+                backgroundImage: `url(${course.imagePath})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
@@ -55,7 +55,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         {/* Course Info */}
         <div className="p-3 flex-grow flex flex-col">
           <h3 className="text-gray-900 font-medium text-sm mb-0.5 line-clamp-2">{course.title}</h3>
-          <p className="text-gray-500 text-xs mb-2">{course.author}</p>
+          <p className="text-gray-500 text-xs mb-2">{course.trainerName}</p>
 
           {/* Rating */}
           <div className="flex items-center gap-1 mb-2">

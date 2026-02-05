@@ -28,8 +28,8 @@ export default function CourseDetailPage() {
   }
 
   const handleBuy = () => {
-    if (isPurchased && course.contents && course.contents.length > 0) {
-      router.push(`/course/${courseId}/lesson/${course.contents[0].id}`);
+    if (isPurchased && course.videoIds && course.videoIds.length > 0) {
+      router.push(`/course/${courseId}/lesson/${course.videoIds[0]}`);
     } else if (!inCart) {
       addToCart(course);
       router.push('/cart');
@@ -61,11 +61,22 @@ export default function CourseDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Course Image */}
             <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
+              {course.imagePath ? (
+                <div
+                  className="absolute inset-0 w-full h-full"
+                  style={{
+                    backgroundImage: `url(${course.imagePath})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
 
               {isPurchased && (
                 <div className="absolute top-3 left-3 px-2.5 py-1 bg-green-500 rounded text-white text-xs font-medium">
@@ -77,7 +88,7 @@ export default function CourseDetailPage() {
             {/* Title and Rating */}
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{course.title}</h1>
-              <p className="text-gray-500 text-sm mb-3">by {course.author}</p>
+              <p className="text-gray-500 text-sm mb-3">by {course.trainerName}</p>
 
               <div className="flex items-center gap-2">
                 <span className="text-gray-900 text-sm font-medium">{course.rating.toFixed(1)}</span>
@@ -106,25 +117,17 @@ export default function CourseDetailPage() {
               </p>
             </div>
 
-            {/* Language */}
-            {course.language && (
-              <div className="flex items-center gap-2 text-gray-500">
-                <Globe size={16} />
-                <span className="text-sm">{course.language}</span>
-              </div>
-            )}
-
-            {/* Contents */}
-            {course.contents && course.contents.length > 0 && (
+            {/* Video List */}
+            {course.videoIds && course.videoIds.length > 0 && (
               <div className="border-t border-gray-200 pt-6">
                 <h2 className="text-gray-900 font-semibold text-base mb-4">
-                  Course Content ({course.contents.length} lessons)
+                  Videos ({course.videoIds.length} adet)
                 </h2>
                 <div className="space-y-2">
-                  {course.contents.map((content, index) => (
+                  {course.videoIds.map((videoId: string, index: number) => (
                     <button
-                      key={content.id}
-                      onClick={() => handleLessonClick(content.id)}
+                      key={videoId}
+                      onClick={() => handleLessonClick(videoId)}
                       disabled={!isPurchased}
                       className={`w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg transition-colors border border-gray-100 ${isPurchased ? 'hover:bg-gray-100 cursor-pointer' : 'cursor-not-allowed opacity-60'
                         }`}
@@ -139,11 +142,8 @@ export default function CourseDetailPage() {
                       </div>
                       <div className="flex-1 text-left">
                         <p className="text-gray-900 text-sm font-medium">
-                          {index + 1}. {content.title}
+                          {index + 1}. Video
                         </p>
-                        {content.duration && (
-                          <p className="text-gray-400 text-xs">{content.duration}</p>
-                        )}
                       </div>
                     </button>
                   ))}
@@ -191,14 +191,9 @@ export default function CourseDetailPage() {
               <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Lessons</span>
-                  <span className="text-gray-900 font-medium">{course.contents?.length || 0}</span>
+                  <span className="text-gray-900 font-medium">{course.videoIds?.length || 0}</span>
                 </div>
-                {course.language && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Language</span>
-                    <span className="text-gray-900 font-medium">{course.language}</span>
-                  </div>
-                )}
+                {/* Dil alanı kaldırıldı */}
               </div>
             </div>
           </div>

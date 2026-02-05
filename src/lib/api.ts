@@ -1,6 +1,26 @@
+// Cart API
+export const cartAPI = {
+  createCart: (courseList: string[], amount: number) =>
+    apiRequest<Cart>(`/api/cart/create?amount=${amount}`, {
+      method: 'POST',
+      body: JSON.stringify(courseList),
+    }),
+
+  getActiveCart: (cartId: string) =>
+    apiRequest<Cart>(`/api/cart/${cartId}`),
+
+  markPaid: (cartId: string) =>
+    apiRequest<void>(`/api/cart/${cartId}/paid`, { method: 'POST' }),
+
+  startStripePayment: (cartId: string) =>
+    apiRequest<string>(`/api/cart/${cartId}/payment/start`, { method: 'POST' }),
+
+  addCourseToCart: (courseId: string) =>
+    apiRequest<Cart>(`/api/cart/add/${courseId}`, { method: 'POST' }),
+};
 // API Configuration
 // Replace with your actual backend URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.viviacademy.xyz';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 // Auth token management
 let authToken: string | null = null;
@@ -69,7 +89,7 @@ const apiRequest = async <T>(
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) =>
-    apiRequest<{ token: string; user: { id: string; fullName: string; email: string; username: string; phoneNumber: string; city: string } }>('/api/auth/login', {
+    apiRequest<{ data: {token: string}; user: { id: string; fullName: string; email: string; username: string; phoneNumber: string; city: string } }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
@@ -99,8 +119,10 @@ export const authAPI = {
 
 // Courses API
 export const coursesAPI = {
-  getAll: () =>
-    apiRequest<{ courses: CourseResponse[] }>('/api/courses/getall'),
+  getAll: async () => {
+    const response = await apiRequest<{ success: boolean; message: string; data: CourseResponse }[]>('/api/courses/getall');
+    return response;
+  },
 
   getById: (id: string) =>
     apiRequest<{ course: CourseDetailResponse }>(`/courses/${id}`),
@@ -116,6 +138,11 @@ export const coursesAPI = {
 export const userAPI = {
   getProfile: () =>
     apiRequest<{ user: UserResponse }>('/user/profile'),
+
+  getUser: async () => {
+    const response = await apiRequest<{ data: UserResponse }>('/api/users/me');
+    return response.data;
+  },
 
   getPurchasedCourses: () =>
     apiRequest<{ courses: CourseResponse[] }>('/user/courses'),
@@ -192,6 +219,7 @@ interface LessonResponse {
 interface UserResponse {
   id: string;
   name: string;
+  fullName: string;
   email: string;
   role: string;
   avatar?: string;
