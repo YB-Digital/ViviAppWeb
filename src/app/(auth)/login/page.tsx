@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
+import { setAuthToken, authAPI } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,29 +19,24 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Simulate login - Replace with Firebase Auth
-    setTimeout(() => {
+    try {
+      const res = await authAPI.login(email, password);
       setUser({
-        id: '1',
-        name: email.split('@')[0],
-        email: email,
-        role: 'student',
+        id: res.user.id,
+        name: res.user.fullName,
+        email: res.user.email,
       });
-      setLoading(false);
+      setAuthToken(res.data.token);
       router.push('/');
-    }, 1000);
+    } catch (error: any) {
+      alert(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google Sign In with Firebase
-    setUser({
-      id: '1',
-      name: 'Google User',
-      email: 'user@gmail.com',
-      role: 'student',
-    });
-    router.push('/');
+    window.location.href = 'https://api.viviacademy.xyz/oauth2/authorization/google';
   };
 
   return (

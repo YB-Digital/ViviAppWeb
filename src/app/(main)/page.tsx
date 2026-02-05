@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import SearchBar from '@/components/ui/SearchBar';
 import CourseCard from '@/components/ui/CourseCard';
 import Footer from '@/components/layout/Footer';
 import { useCourseStore } from '@/store/courseStore';
 import { useUserStore } from '@/store/userStore';
+import { loadCourses } from '@/store/courseStore';
 
 const categories = [
   { id: '1', name: 'Lip Workshop' },
@@ -16,6 +17,10 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { courses } = useCourseStore();
   const { user, isAuthenticated } = useUserStore();
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
 
   const filteredCourses = courses.filter((course) =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase())

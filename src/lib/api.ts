@@ -1,6 +1,6 @@
 // API Configuration
 // Replace with your actual backend URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.viviacademy.de';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.viviacademy.xyz';
 
 // Auth token management
 let authToken: string | null = null;
@@ -28,41 +28,56 @@ const apiRequest = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const token = getAuthToken();
-  
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
-
   if (token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
-
+  // DEBUG: Header ve token logu
+  if (endpoint.includes('/payment/intent')) {
+    console.log('[API DEBUG] Token:', token);
+    console.log('[API DEBUG] Headers:', headers);
+  }
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
   });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-    throw new Error(error.message || 'Request failed');
+  let responseBody: any = null;
+  try {
+    responseBody = await response.clone().json();
+  } catch (e) {
+    responseBody = await response.clone().text();
   }
-
-  return response.json();
+  if (!response.ok || (responseBody && responseBody.success === false)) {
+    console.error('API ERROR:', {
+      url: `${API_BASE_URL}${endpoint}`,
+      status: response.status,
+      statusText: response.statusText,
+      body: responseBody,
+      message: responseBody?.message,
+    });
+    const error = new Error(responseBody?.message || 'Request failed');
+    (error as any).status = response.status;
+    (error as any).body = responseBody;
+    throw error;
+  }
+  return responseBody;
 };
 
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) =>
-    apiRequest<{ token: string; user: { id: string; name: string; email: string } }>('/auth/login', {
+    apiRequest<{ token: string; user: { id: string; fullName: string; email: string; username: string; phoneNumber: string; city: string } }>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
 
-  register: (name: string, email: string, password: string) =>
-    apiRequest<{ token: string; user: { id: string; name: string; email: string } }>('/auth/register', {
+  register: (data: { fullName: string; email: string; username: string; phoneNumber: string; password: string; city: string }) =>
+    apiRequest<{ token: string; user: { id: string; fullName: string; email: string; username: string; phoneNumber: string; city: string } }>('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(data),
     }),
 
   googleAuth: (idToken: string) =>
@@ -85,7 +100,7 @@ export const authAPI = {
 // Courses API
 export const coursesAPI = {
   getAll: () =>
-    apiRequest<{ courses: CourseResponse[] }>('/courses'),
+    apiRequest<{ courses: CourseResponse[] }>('/api/courses/getall'),
 
   getById: (id: string) =>
     apiRequest<{ course: CourseDetailResponse }>(`/courses/${id}`),
@@ -126,6 +141,15 @@ export const userAPI = {
 
 // Cart & Payment API
 export const paymentAPI = {
+  createPaymentIntent: (amount: number, currency: string, courseList: string[]) =>
+    apiRequest<{ clientSecret: string; intentId: string }>(
+      '/api/payment/intent',
+      {
+        method: 'POST',
+        body: JSON.stringify({ amount, currency, courseList }),
+      }
+    ),
+
   createCheckoutSession: (courseIds: string[]) =>
     apiRequest<{ sessionId: string; url: string }>('/payment/checkout', {
       method: 'POST',

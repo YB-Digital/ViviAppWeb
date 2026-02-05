@@ -7,6 +7,7 @@ import { CreditCard, Lock, CheckCircle, ArrowLeft } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useCartStore } from '@/store/cartStore';
 import { useCourseStore } from '@/store/courseStore';
+import { paymentAPI, getAuthToken } from '@/lib/api';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -43,14 +44,46 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
+    const token = getAuthToken();
+    if (!token) {
+      alert('Lütfen önce giriş yapın.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const amount = Math.round(subtotal * 100); 
+      const currency = 'usd';
+      const courseList = items.map((item) => item.id);
+      await paymentAPI.createPaymentIntent(amount, currency, courseList);
+
       items.forEach(item => {
         addToPurchased(item);
       });
       clearCart();
-      setLoading(false);
       setSuccess(true);
-    }, 2000);
+    } catch (error: any) {
+      if (error instanceof Error) {
+        console.error('Payment error:', error.message, error.stack);
+        // Network error veya fetch hatası
+        if (error.message === 'Failed to fetch' || error.message === 'NetworkError when attempting to fetch resource.') {
+          console.error('Network error: Sunucuya ulaşılamıyor veya CORS hatası olabilir.');
+        }
+        // API'dan dönen response varsa
+        if ((error as any).response) {
+          console.error('API response:', (error as any).response);
+        }
+      } else {
+        try {
+          console.error('Payment error (raw):', JSON.stringify(error));
+        } catch (e) {
+          console.error('Payment error (unstringifiable):', error);
+        }
+      }
+      alert(error.message || 'Payment failed. Lütfen giriş yaptığınızdan ve sepetinizde kurs olduğundan emin olun.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) {

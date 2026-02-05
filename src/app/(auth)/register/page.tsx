@@ -6,42 +6,56 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
+import { setAuthToken, authAPI } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { setUser } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Simulate registration - Replace with Firebase Auth
-    setTimeout(() => {
+    const payload = {
+      fullName: fullName.trim(),
+      email: email.trim(),
+      username: username.trim(),
+      phoneNumber: phoneNumber.trim(),
+      password: password.trim(),
+      city: city.trim(),
+    };
+    console.log('Register API payload:', payload);
+    try {
+      const res = await authAPI.register(payload);
       setUser({
-        id: '1',
-        name: name,
-        email: email,
+        id: res.user.id,
+        name: res.user.fullName,
+        email: res.user.email,
         role: 'student',
       });
-      setLoading(false);
+      setAuthToken(res.token);
       router.push('/');
-    }, 1000);
+    } catch (error: any) {
+      // Hata detaylarını logla
+      console.error('Register error:', error);
+      if (error && error.body) {
+        console.error('Register error response body:', error.body);
+      }
+      alert(error.message || 'Register failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignUp = () => {
-    // TODO: Implement Google Sign Up with Firebase
-    setUser({
-      id: '1',
-      name: 'Google User',
-      email: 'user@gmail.com',
-      role: 'student',
-    });
-    router.push('/');
+    window.location.href = 'https://api.viviacademy.xyz/oauth2/authorization/google';
   };
 
   return (
@@ -65,8 +79,8 @@ export default function RegisterPage() {
           <input
             type="text"
             placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none"
             required
           />
@@ -83,6 +97,54 @@ export default function RegisterPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Username Input */}
+        <div className="relative">
+          <User
+            size={20}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* Phone Number Input */}
+        <div className="relative">
+          <User
+            size={20}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Phone Number"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none"
+            required
+          />
+        </div>
+
+        {/* City Input */}
+        <div className="relative">
+          <User
+            size={20}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-primary focus:outline-none"
             required
           />
