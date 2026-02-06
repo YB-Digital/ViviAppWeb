@@ -6,10 +6,15 @@ import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import { useCartStore } from '@/store/cartStore';
 import { cartAPI } from '@/lib/api';
+import { useEffect } from 'react';
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, subtotal, removeFromCart } = useCartStore();
+  const { items, subtotal, removeFromCart, fetchCart, loading, error } = useCartStore();
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   const handleCheckout = async () => {
     try {
@@ -30,6 +35,9 @@ export default function CartPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">Shopping Cart</h1>
+
+        {loading && <p className="text-gray-500 mb-4">Loading cart...</p>}
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
         {items.length === 0 ? (
           <EmptyState

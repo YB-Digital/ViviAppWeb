@@ -6,6 +6,7 @@ import { Heart, Star, Play, Globe, Lock, ArrowLeft } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useCourseStore } from '@/store/courseStore';
 import { useCartStore } from '@/store/cartStore';
+import { useState } from 'react';
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -14,6 +15,7 @@ export default function CourseDetailPage() {
 
   const { getCourseById, toggleFavorite, purchasedCourses } = useCourseStore();
   const { addToCart, isInCart } = useCartStore();
+  const [adding, setAdding] = useState(false);
 
   const course = getCourseById(courseId);
   const inCart = isInCart(courseId);
@@ -27,12 +29,19 @@ export default function CourseDetailPage() {
     );
   }
 
-  const handleBuy = () => {
+  const handleBuy = async () => {
     if (isPurchased && course.videoIds && course.videoIds.length > 0) {
       router.push(`/course/${courseId}/lesson/${course.videoIds[0]}`);
     } else if (!inCart) {
-      addToCart(course);
-      router.push('/cart');
+      setAdding(true);
+      try {
+        await addToCart(course);
+        router.push('/cart');
+      } catch (e) {
+        alert('Kurs sepete eklenemedi!');
+      } finally {
+        setAdding(false);
+      }
     } else {
       router.push('/cart');
     }
@@ -166,12 +175,14 @@ export default function CourseDetailPage() {
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                <Button fullWidth onClick={handleBuy}>
-                  {isPurchased
-                    ? 'Start Learning'
-                    : inCart
-                      ? 'Go to Cart'
-                      : 'Add to Cart'
+                <Button fullWidth onClick={handleBuy} disabled={adding}>
+                  {adding
+                    ? 'Adding...'
+                    : isPurchased
+                      ? 'Start Learning'
+                      : inCart
+                        ? 'Go to Cart'
+                        : 'Add to Cart'
                   }
                 </Button>
                 
@@ -193,7 +204,6 @@ export default function CourseDetailPage() {
                   <span className="text-gray-500">Lessons</span>
                   <span className="text-gray-900 font-medium">{course.videoIds?.length || 0}</span>
                 </div>
-                {/* Dil alanı kaldırıldı */}
               </div>
             </div>
           </div>

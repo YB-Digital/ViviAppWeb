@@ -172,23 +172,63 @@ export const paymentAPI = {
 
 // Cart API
 export const cartAPI = {
-  createCart: (courseList: string[], amount: number) =>
-    apiRequest<Cart>(`/api/cart/create?amount=${amount}`, {
-      method: 'POST',
-      body: JSON.stringify(courseList),
-    }),
+  // Sepet oluştur
+  createCart: (courseIds: string[], amount: number) =>
+    apiRequest<{ cartId: string }>(
+      `/api/cart/create?amount=${amount}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(courseIds),
+      }
+    ),
 
-  getActiveCart: (cartId: string) =>
-    apiRequest<Cart>(`/api/cart/${cartId}`),
+  // Sepete kurs ekle
+  addToCart: (cartId: string, courseIds: string[]) =>
+    apiRequest<{ success: boolean }>(
+      `/api/cart/add/${cartId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(courseIds),
+      }
+    ),
 
-  markPaid: (cartId: string) =>
-    apiRequest<void>(`/api/cart/${cartId}/paid`, { method: 'POST' }),
+  // Sepetten kurs sil
+  removeFromCart: (cartId: string, courseId: string) =>
+    apiRequest<{ success: boolean }>(
+      `/api/cart/remove/${cartId}/${courseId}`,
+      {
+        method: 'DELETE',
+      }
+    ),
 
-  startStripePayment: (cartId: string) =>
-    apiRequest<string>(`/api/cart/${cartId}/payment/start`, { method: 'POST' }),
+  // Sepeti getir
+  getCart: (cartId: string, amount: number) =>
+    apiRequest<{ cart: any }>(
+      `/api/cart/${cartId}?amount=${amount}`,
+      {
+        method: 'GET',
+      }
+    ),
 
-  addCourseToCart: (courseId: string) =>
-    apiRequest<Cart>(`/api/cart/add/${courseId}`, { method: 'POST' }),
+  // Ödeme yapıldı mı kontrolü
+  setPaid: (cartId: string, courseIds: string[]) =>
+    apiRequest<{ paid: boolean }>(
+      `/api/cart/${cartId}/paid`,
+      {
+        method: 'POST',
+        body: JSON.stringify(courseIds),
+      }
+    ),
+
+  // Ödeme başlat
+  startPayment: (cartId: string, payload: any[]) =>
+    apiRequest<{ success: boolean }>(
+      `/api/cart/${cartId}/payment/start`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    ),
 };
 
 // Response Types
