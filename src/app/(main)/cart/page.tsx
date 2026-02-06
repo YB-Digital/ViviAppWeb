@@ -5,18 +5,17 @@ import { ShoppingCart, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import { useCartStore } from '@/store/cartStore';
+import { cartAPI } from '@/lib/api';
 
 export default function CartPage() {
   const router = useRouter();
   const { items, subtotal, removeFromCart } = useCartStore();
 
   const handleCheckout = async () => {
-    // Sepet oluşturma API çağrısı
     try {
       const courseList = items.map((item) => item.id);
       const amount = subtotal;
-      // cartAPI import edilmeli
-      const cart = await import('@/lib/api').then(mod => mod.cartAPI.createCart(courseList, amount));
+      const cart = await cartAPI.createCart(courseList, amount);
       if (cart && cart.id) {
         router.push(`/checkout?cartId=${cart.id}`);
       } else {

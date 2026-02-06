@@ -32,6 +32,7 @@ export interface CourseContent {
 
 // Cart Model
 export interface Cart {
+  id: string;
   items: Course[];
   subtotal: number;
 }

@@ -1,26 +1,8 @@
-// Cart API
-export const cartAPI = {
-  createCart: (courseList: string[], amount: number) =>
-    apiRequest<Cart>(`/api/cart/create?amount=${amount}`, {
-      method: 'POST',
-      body: JSON.stringify(courseList),
-    }),
+import { Cart } from "@/types";
 
-  getActiveCart: (cartId: string) =>
-    apiRequest<Cart>(`/api/cart/${cartId}`),
-
-  markPaid: (cartId: string) =>
-    apiRequest<void>(`/api/cart/${cartId}/paid`, { method: 'POST' }),
-
-  startStripePayment: (cartId: string) =>
-    apiRequest<string>(`/api/cart/${cartId}/payment/start`, { method: 'POST' }),
-
-  addCourseToCart: (courseId: string) =>
-    apiRequest<Cart>(`/api/cart/add/${courseId}`, { method: 'POST' }),
-};
 // API Configuration
 // Replace with your actual backend URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.viviacademy.xyz';
 
 // Auth token management
 let authToken: string | null = null;
@@ -185,6 +167,28 @@ export const paymentAPI = {
 
   verifyPayment: (sessionId: string) =>
     apiRequest<{ success: boolean; courses: CourseResponse[] }>(`/payment/verify/${sessionId}`),
+};
+
+
+// Cart API
+export const cartAPI = {
+  createCart: (courseList: string[], amount: number) =>
+    apiRequest<Cart>(`/api/cart/create?amount=${amount}`, {
+      method: 'POST',
+      body: JSON.stringify(courseList),
+    }),
+
+  getActiveCart: (cartId: string) =>
+    apiRequest<Cart>(`/api/cart/${cartId}`),
+
+  markPaid: (cartId: string) =>
+    apiRequest<void>(`/api/cart/${cartId}/paid`, { method: 'POST' }),
+
+  startStripePayment: (cartId: string) =>
+    apiRequest<string>(`/api/cart/${cartId}/payment/start`, { method: 'POST' }),
+
+  addCourseToCart: (courseId: string) =>
+    apiRequest<Cart>(`/api/cart/add/${courseId}`, { method: 'POST' }),
 };
 
 // Response Types
