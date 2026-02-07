@@ -26,14 +26,14 @@ export const useCartStore = create<CartState>()(
       error: null,
 
       fetchCart: async () => {
-        const cartId = get().cartId;
-        if (!cartId) return;
         set({ loading: true, error: null });
         try {
-          const res = await cartAPI.getCart(cartId, get().subtotal);
-          console.log('[Cart] fetchCart API response:', res);
-          // Burada backend'den dönen cart içeriğine göre state güncellenir
-          set({ items: res.cart.items || [], subtotal: res.cart.subtotal || 0 });
+          const res = await cartAPI.getMyActiveCart();
+          if (res && Array.isArray(res.items) && typeof res.subtotal === 'number' && typeof res.id === 'string') {
+            set({ items: res.items, subtotal: res.subtotal, cartId: res.id });
+          } else {
+            set({ items: [], subtotal: 0, cartId: null });
+          }
         } catch (e: any) {
           set({ error: e.message || 'Sepet getirilemedi!' });
         } finally {
@@ -45,23 +45,18 @@ export const useCartStore = create<CartState>()(
         set({ loading: true, error: null });
         try {
           let cartId = get().cartId;
-          let items = get().items;
-          let subtotal = get().subtotal;
-          console.log('[Cart] addToCart called. cartId:', cartId, 'courseId:', course.id);
-          // Eğer sepet yoksa önce oluştur
           if (!cartId) {
-            const res = await cartAPI.createCart([course.id], course.price);
-            cartId = res.cartId;
-            set({ cartId });
-            console.log('[Cart] Cart created. cartId:', cartId, 'API response:', res);
-            // Sepeti backend'den çek
+            // Sepet yoksa oluştur
+            const res = await cartAPI.createCart(course.price, [course.id]);
+            if (res && typeof res.id === 'string') {
+              cartId = res.id;
+              set({ cartId });
+            }
             await get().fetchCart();
             return;
           }
           // Sepete ekle
-          const addRes = await cartAPI.addToCart(cartId, [course.id]);
-          console.log('[Cart] addToCart API response:', addRes);
-          // Sepeti backend'den çek
+          await cartAPI.addToCart(course.id);
           await get().fetchCart();
         } catch (e: any) {
           console.error('[Cart] addToCart error:', e);
@@ -72,18 +67,8 @@ export const useCartStore = create<CartState>()(
       },
 
       removeFromCart: async (courseId) => {
-        const cartId = get().cartId;
-        set({ loading: true, error: null });
-        try {
-          if (cartId) {
-            await cartAPI.removeFromCart(cartId, courseId);
-            await get().fetchCart();
-          }
-        } catch (e: any) {
-          set({ error: e.message || 'Sepetten çıkarılamadı!' });
-        } finally {
-          set({ loading: false });
-        }
+        // Yeni API'da remove fonksiyonu yok, sadece fetchCart ile güncellenebilir veya eklenirse burada kullanılabilir.
+        set({ error: 'Kurs sepetten çıkarma API fonksiyonu backendde yok!' });
       },
 
       clearCart: async () => {

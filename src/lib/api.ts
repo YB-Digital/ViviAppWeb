@@ -70,28 +70,31 @@ const apiRequest = async <T>(
 
 // Auth API
 export const authAPI = {
-  login: (email: string, password: string) =>
-    apiRequest<{ data: {token: string}; user: { id: string; fullName: string; email: string; username: string; phoneNumber: string; city: string } }>('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
-
-  register: (data: { fullName: string; email: string; username: string; phoneNumber: string; password: string; city: string }) =>
-    apiRequest<{ token: string; user: { id: string; fullName: string; email: string; username: string; phoneNumber: string; city: string } }>('/api/auth/register', {
+  login: (data: { email: string; password: string }) =>
+    apiRequest('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  googleAuth: (idToken: string) =>
-    apiRequest<{ token: string; user: { id: string; name: string; email: string } }>('/auth/google', {
+  register: (data: { fullName: string; email: string; username: string; phoneNumber: string; password: string; city: string }) =>
+    apiRequest('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify(data),
     }),
 
-  forgotPassword: (email: string) =>
-    apiRequest<{ message: string }>('/auth/forgot-password', {
+  googleSuccess: () =>
+    apiRequest('/api/auth/google-success', { method: 'GET' }),
+
+  forgotPassword: (data: { email: string; isMobile?: boolean }) =>
+    apiRequest('/api/auth/reset-password-request', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify(data),
+    }),
+
+  resetPassword: (token: string, data: { password: string; againPassword: string }) =>
+    apiRequest(`/api/auth/reset-password/${token}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
     }),
 
   logout: () => {
@@ -101,134 +104,97 @@ export const authAPI = {
 
 // Courses API
 export const coursesAPI = {
-  getAll: async () => {
-    const response = await apiRequest<{ success: boolean; message: string; data: CourseResponse }[]>('/api/courses/getall');
-    return response;
-  },
-
-  getById: (id: string) =>
-    apiRequest<{ course: CourseDetailResponse }>(`/courses/${id}`),
-
-  getLessons: (courseId: string) =>
-    apiRequest<{ lessons: LessonResponse[] }>(`/courses/${courseId}/lessons`),
-
-  getVideoUrl: (courseId: string, lessonId: string) =>
-    apiRequest<{ url: string; token: string }>(`/courses/${courseId}/lessons/${lessonId}/video`),
+  getAll: () => apiRequest('/api/courses/getall'),
+  getById: (id: string) => apiRequest(`/api/courses/${id}`),
+  create: (data: any) => apiRequest('/api/courses', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => apiRequest(`/api/courses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => apiRequest(`/api/courses/${id}`, { method: 'DELETE' }),
+  getByUserId: (userId: string) => apiRequest(`/api/courses?userId=${userId}`),
 };
 
 // User API
 export const userAPI = {
-  getProfile: () =>
-    apiRequest<{ user: UserResponse }>('/user/profile'),
-
-  getUser: async () => {
-    const response = await apiRequest<{ data: UserResponse }>('/api/users/me');
-    return response.data;
-  },
-
-  getPurchasedCourses: () =>
-    apiRequest<{ courses: CourseResponse[] }>('/user/courses'),
-
-  getFavorites: () =>
-    apiRequest<{ courses: CourseResponse[] }>('/user/favorites'),
-
-  addFavorite: (courseId: string) =>
-    apiRequest<{ message: string }>(`/user/favorites/${courseId}`, { method: 'POST' }),
-
-  removeFavorite: (courseId: string) =>
-    apiRequest<{ message: string }>(`/user/favorites/${courseId}`, { method: 'DELETE' }),
-
-  getLessonProgress: (courseId: string, lessonId: string) =>
-    apiRequest<{ progress: number; completed: boolean }>(`/user/courses/${courseId}/lessons/${lessonId}/progress`),
-
-  updateLessonProgress: (courseId: string, lessonId: string, progress: number) =>
-    apiRequest<{ message: string }>(`/user/courses/${courseId}/lessons/${lessonId}/progress`, {
-      method: 'POST',
-      body: JSON.stringify({ progress }),
-    }),
+  getProfile: () => apiRequest('/api/users/profile'),
+  updateProfile: (data: any) => apiRequest('/api/users/profile', { method: 'PUT', body: JSON.stringify(data) }),
+  createProfile: (data: any) => apiRequest('/api/users/profile', { method: 'POST', body: JSON.stringify(data) }),
+  getMe: () => apiRequest('/api/users/me'),
+  getById: (id: string) => apiRequest(`/api/users/${id}`),
+  update: (id: string, data: any) => apiRequest(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => apiRequest(`/api/users/${id}`, { method: 'DELETE' }),
+  verify: (id: string) => apiRequest(`/api/users/${id}/verify`, { method: 'PUT' }),
 };
 
-// Cart & Payment API
+// Payment API
 export const paymentAPI = {
-  createPaymentIntent: (amount: number, currency: string, courseList: string[]) =>
-    apiRequest<{ clientSecret: string; intentId: string }>(
-      '/api/payment/intent',
-      {
-        method: 'POST',
-        body: JSON.stringify({ amount, currency, courseList }),
-      }
-    ),
-
-  createCheckoutSession: (courseIds: string[]) =>
-    apiRequest<{ sessionId: string; url: string }>('/payment/checkout', {
+  createPaymentIntent: (cartId: string, data: any, token: string) =>
+    apiRequest(`/api/payment/${cartId}/intent`, {
       method: 'POST',
-      body: JSON.stringify({ courseIds }),
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
     }),
-
-  verifyPayment: (sessionId: string) =>
-    apiRequest<{ success: boolean; courses: CourseResponse[] }>(`/payment/verify/${sessionId}`),
+  createCheckoutSession: (userId: string) =>
+    apiRequest(`/api/checkout/?userId=${userId}`, { method: 'POST' }),
+  startStripePayment: () => apiRequest('/api/cart/payment/start', { method: 'POST' }),
+  markCartPaid: () => apiRequest('/api/cart/paid', { method: 'POST' }),
 };
 
 
 // Cart API
+import type { Cart } from '@/types';
 export const cartAPI = {
-  // Sepet oluştur
-  createCart: (courseIds: string[], amount: number) =>
-    apiRequest<{ cartId: string }>(
-      `/api/cart/create?amount=${amount}`,
-      {
-        method: 'POST',
-        body: JSON.stringify(courseIds),
-      }
-    ),
+  createCart: (amount: number, courseIds: string[]): Promise<Cart> =>
+    apiRequest('/api/cart/create?amount=' + amount, {
+      method: 'POST',
+      body: JSON.stringify(courseIds),
+    }),
+  addToCart: (courseId: string) =>
+    apiRequest(`/api/cart/add/${courseId}`, { method: 'POST' }),
+  getMyActiveCart: (): Promise<Cart> => apiRequest('/api/cart'),
+};
+// Favorites API
+export const favoritesAPI = {
+  getFavorites: () => apiRequest('/api/favorites'),
+  addFavorite: (courseId: string) => apiRequest('/api/favorites/add', { method: 'POST', body: JSON.stringify({ courseId }) }),
+  removeFavorite: (courseId: string) => apiRequest(`/api/favorites/remove/${courseId}`, { method: 'DELETE' }),
+  isFavorite: (courseId: string) => apiRequest(`/api/favorites/check/${courseId}`),
+};
 
-  // Sepete kurs ekle
-  addToCart: (cartId: string, courseIds: string[]) =>
-    apiRequest<{ success: boolean }>(
-      `/api/cart/add/${cartId}`,
-      {
-        method: 'POST',
-        body: JSON.stringify(courseIds),
-      }
-    ),
+// User Preferences API
+export const userPreferencesAPI = {
+  getPreferences: () => apiRequest('/api/v1/user-preferences/get'),
+  updatePreferences: (data: any) => apiRequest('/api/v1/user-preferences/update', { method: 'PUT', body: JSON.stringify(data) }),
+};
 
-  // Sepetten kurs sil
-  removeFromCart: (cartId: string, courseId: string) =>
-    apiRequest<{ success: boolean }>(
-      `/api/cart/remove/${cartId}/${courseId}`,
-      {
-        method: 'DELETE',
-      }
-    ),
+// Category API
+export const categoryAPI = {
+  getAll: () => apiRequest('/api/categories/getall'),
+  getById: (id: string) => apiRequest(`/api/categories/${id}`),
+  create: (data: any) => apiRequest('/api/admin/category', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => apiRequest(`/api/admin/category/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => apiRequest(`/api/admin/category/${id}`, { method: 'DELETE' }),
+};
 
-  // Sepeti getir
-  getCart: (cartId: string, amount: number) =>
-    apiRequest<{ cart: any }>(
-      `/api/cart/${cartId}?amount=${amount}`,
-      {
-        method: 'GET',
-      }
-    ),
+// Video API
+export const videoAPI = {
+  getAll: () => apiRequest('/api/videos'),
+  getById: (id: string) => apiRequest(`/api/videos/${id}`),
+  upload: (data: any, params: { title: string; description: string; videoAltBaslik?: string; videoSections?: string[]; thumbnailUrl?: string; categoryId?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return apiRequest(`/api/videos/upload?${query}`, { method: 'POST', body: JSON.stringify(data) });
+  },
+  delete: (id: string) => apiRequest(`/api/videos/${id}`, { method: 'DELETE' }),
+};
 
-  // Ödeme yapıldı mı kontrolü
-  setPaid: (cartId: string, courseIds: string[]) =>
-    apiRequest<{ paid: boolean }>(
-      `/api/cart/${cartId}/paid`,
-      {
-        method: 'POST',
-        body: JSON.stringify(courseIds),
-      }
-    ),
+// Certificate API
+export const certificateAPI = {
+  upload: (data: any) => apiRequest('/api/certificates/upload', { method: 'POST', body: JSON.stringify(data) }),
+  getById: (id: string) => apiRequest(`/api/certificates/${id}`),
+  delete: (id: string) => apiRequest(`/api/certificates/${id}`, { method: 'DELETE' }),
+};
 
-  // Ödeme başlat
-  startPayment: (cartId: string, payload: any[]) =>
-    apiRequest<{ success: boolean }>(
-      `/api/cart/${cartId}/payment/start`,
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }
-    ),
+// Admin API
+export const adminAPI = {
+  sendNotification: (data: any) => apiRequest('/api/admin/send-notification', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // Response Types

@@ -20,9 +20,9 @@ export default function CartPage() {
     try {
       const courseList = items.map((item) => item.id);
       const amount = subtotal;
-      const cart = await cartAPI.createCart(courseList, amount);
-      if (cart && cart.id) {
-        router.push(`/checkout?cartId=${cart.id}`);
+      const cartRes = await cartAPI.createCart(amount, courseList);
+      if (cartRes && cartRes.id) {
+        router.push(`/checkout?cartId=${cartRes.id}`);
       } else {
         alert('Sepet oluşturulamadı!');
       }

@@ -19,9 +19,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await authAPI.login(email, password);
-      setAuthToken(res.data.token);
-      router.push('/');
+      const res = await authAPI.login({ email, password });
+      if (res && res.data && res.data.token) {
+        setAuthToken(res.data.token);
+        router.push('/');
+      } else {
+        alert('Login failed: Token alınamadı.');
+      }
     } catch (error: any) {
       alert(error.message || 'Login failed');
     } finally {

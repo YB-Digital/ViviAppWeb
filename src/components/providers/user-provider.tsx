@@ -10,12 +10,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await userAPI.getUser();
-setUser({
-          id: res.id,
-          name: res.fullName,
-          email: res.email,
-        });
+        const res = await userAPI.getMe();
+        if (res && res.data) {
+          setUser({
+            id: res.data.id,
+            name: res.data.fullName,
+            email: res.data.email,
+          });
+        } else {
+          setUser(null);
+        }
       } catch (error) {
         setUser(null);
       }

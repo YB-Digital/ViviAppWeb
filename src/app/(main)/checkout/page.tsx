@@ -55,7 +55,14 @@ export default function CheckoutPage() {
       const amount = Math.round(subtotal * 100); 
       const currency = 'usd';
       const courseList = items.map((item) => item.id);
-      await paymentAPI.createPaymentIntent(amount, currency, courseList);
+      // Yeni API: cartId zorunlu, token header ile gönderilmeli
+      const cartId = new URLSearchParams(window.location.search).get('cartId');
+      if (!cartId) {
+        alert('CartId bulunamadı!');
+        setLoading(false);
+        return;
+      }
+      await paymentAPI.createPaymentIntent(cartId, { amount, currency, courseList }, token);
 
       items.forEach(item => {
         addToPurchased(item);

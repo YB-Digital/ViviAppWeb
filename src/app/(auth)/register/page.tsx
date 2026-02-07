@@ -34,14 +34,18 @@ export default function RegisterPage() {
     console.log('Register API payload:', payload);
     try {
       const res = await authAPI.register(payload);
-      setUser({
-        id: res.user.id,
-        name: res.user.fullName,
-        email: res.user.email,
-        role: 'student',
-      });
-      setAuthToken(res.token);
-      router.push('/');
+      if (res && res.token && res.user) {
+        setUser({
+          id: res.user.id,
+          name: res.user.fullName,
+          email: res.user.email,
+          role: 'student',
+        });
+        setAuthToken(res.token);
+        router.push('/');
+      } else {
+        alert('Kayıt başarısız: Kullanıcı veya token alınamadı.');
+      }
     } catch (error: any) {
       // Hata detaylarını logla
       console.error('Register error:', error);
