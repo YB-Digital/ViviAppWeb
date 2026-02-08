@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role?: "student";
+  role?: string;
 }
 
 export interface Course {
@@ -22,6 +22,7 @@ export interface Course {
   trainerName: string;
   userId: string;
   videoIds: string[];
+  author?: string;
 }
 
 export interface CourseContent {

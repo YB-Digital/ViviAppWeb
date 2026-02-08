@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { useUserStore } from '@/store/userStore';
-import { setAuthToken, authAPI, userAPI } from '@/lib/api';
+import { setAuthToken, authAPI } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,14 +19,25 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authAPI.login({ email, password });
-      if (res && res.data && res.data.token) {
-        setAuthToken(res.data.token);
+      if (res && res.token && res.user) {
+        setAuthToken(res.token);
+        // Eğer user bilgisini store'a almak isterseniz:
+        // useUserStore.getState().setUser({
+        //   id: res.user.id,
+        //   name: res.user.fullName,
+        //   email: res.user.email,
+        //   role: 'student',
+        // });
         router.push('/');
       } else {
         alert('Login failed: Token alınamadı.');
       }
-    } catch (error: any) {
-      alert(error.message || 'Login failed');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(error.message || 'Login failed');
+      } else {
+        alert('Login failed');
+      }
     } finally {
       setLoading(false);
     }

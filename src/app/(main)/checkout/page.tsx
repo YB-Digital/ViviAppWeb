@@ -13,6 +13,9 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCartStore();
   const { addToPurchased } = useCourseStore();
+  // useEffect bağımlılıkları için öneri
+  // Eğer fetchCart fonksiyonu varsa ve kullanılacaksa, aşağıdaki gibi eklenmeli:
+  // useEffect(() => { fetchCart(); }, [fetchCart]);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -41,7 +44,6 @@ export default function CheckoutPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     setLoading(true);
 
     const token = getAuthToken();
@@ -69,7 +71,7 @@ export default function CheckoutPage() {
       });
       clearCart();
       setSuccess(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Payment error:', error.message, error.stack);
         // Network error veya fetch hatası
@@ -77,17 +79,18 @@ export default function CheckoutPage() {
           console.error('Network error: Sunucuya ulaşılamıyor veya CORS hatası olabilir.');
         }
         // API'dan dönen response varsa
-        if ((error as any).response) {
-          console.error('API response:', (error as any).response);
+        if (error && typeof error === 'object' && 'response' in error) {
+          console.error('API response:', (error as { response?: unknown }).response);
         }
+        alert(error.message || 'Payment failed. Lütfen giriş yaptığınızdan ve sepetinizde kurs olduğundan emin olun.');
       } else {
         try {
-          console.error('Payment error (raw):', JSON.stringify(error));
-        } catch (e) {
-          console.error('Payment error (unstringifiable):', error);
+           console.error('Payment error (raw):', JSON.stringify(error));
+        } catch {
+           console.error('Payment error (unstringifiable):', error);
         }
+        alert('Payment failed. Lütfen giriş yaptığınızdan ve sepetinizde kurs olduğundan emin olun.');
       }
-      alert(error.message || 'Payment failed. Lütfen giriş yaptığınızdan ve sepetinizde kurs olduğundan emin olun.');
     } finally {
       setLoading(false);
     }
@@ -242,6 +245,11 @@ export default function CheckoutPage() {
                     <div className="flex-1 min-w-0 pr-3">
                       <p className="text-gray-900 text-sm font-medium truncate">{item.title}</p>
                       <p className="text-gray-500 text-xs">{item.author}</p>
+                      {/* Next.js Image önerisi: */}
+                      {/* <Image src={item.imagePath} alt={item.title} width={64} height={64} className="w-16 h-16 rounded-lg object-cover" /> */}
+                      {item.imagePath && (
+                        <img src={item.imagePath} alt={item.title} className="w-16 h-16 rounded-lg object-cover" />
+                      )}
                     </div>
                     <span className="text-gray-900 text-sm font-medium">
                       ${item.price.toFixed(2)}

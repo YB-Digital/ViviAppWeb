@@ -46,13 +46,17 @@ export default function RegisterPage() {
       } else {
         alert('Kayıt başarısız: Kullanıcı veya token alınamadı.');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Hata detaylarını logla
-      console.error('Register error:', error);
-      if (error && error.body) {
-        console.error('Register error response body:', error.body);
+      if (error instanceof Error) {
+        console.error('Register error:', error);
+            if (error && typeof error === 'object' && 'body' in error) {
+              console.error('Register error response body:', (error as { body?: unknown }).body);
+        }
+        alert(error.message || 'Register failed');
+      } else {
+        alert('Register failed');
       }
-      alert(error.message || 'Register failed');
     } finally {
       setLoading(false);
     }

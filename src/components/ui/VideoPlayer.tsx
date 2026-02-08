@@ -10,7 +10,6 @@ import {
   Minimize,
   SkipBack,
   SkipForward,
-  Settings
 } from 'lucide-react';
 
 interface VideoPlayerProps {

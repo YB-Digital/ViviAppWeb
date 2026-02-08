@@ -14,21 +14,12 @@ export default function CartPage() {
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
+  // Sepeti checkout sayfasına yönlendiren fonksiyon
   const handleCheckout = async () => {
-    try {
-      const courseList = items.map((item) => item.id);
-      const amount = subtotal;
-      const cartRes = await cartAPI.createCart(amount, courseList);
-      if (cartRes && cartRes.id) {
-        router.push(`/checkout?cartId=${cartRes.id}`);
-      } else {
-        alert('Sepet oluşturulamadı!');
-      }
-    } catch (err) {
-      alert('Sepet oluşturulurken hata oluştu!');
-    }
+    if (!items.length) return;
+    router.push('/checkout');
   };
 
   return (
