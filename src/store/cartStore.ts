@@ -29,6 +29,7 @@ export const useCartStore = create<CartState>()(
         set({ loading: true, error: null });
         try {
           const res = await cartAPI.getMyActiveCart();
+          console.log(res)
           if (res && Array.isArray(res.items) && typeof res.subtotal === 'number' && typeof res.id === 'string') {
             set({ items: res.items, subtotal: res.subtotal, cartId: res.id });
           } else {

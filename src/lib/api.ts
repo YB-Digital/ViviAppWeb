@@ -8,13 +8,9 @@ export type UserGetMeResponse = {
 };
 
 export type LoginResponse = {
-  token: string;
-  user: {
-    id: string;
-    fullName: string;
-    email: string;
-    role: string;
-  };
+ data: {
+   token: string;
+ }
 };
 
 export type RegisterResponse = {

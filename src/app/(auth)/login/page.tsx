@@ -19,8 +19,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authAPI.login({ email, password });
-      if (res && res.token && res.user) {
-        setAuthToken(res.token);
+      if (res && res.data?.token) {
+        setAuthToken(res.data.token);
         // Eğer user bilgisini store'a almak isterseniz:
         // useUserStore.getState().setUser({
         //   id: res.user.id,
